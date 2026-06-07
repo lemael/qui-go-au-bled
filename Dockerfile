@@ -18,7 +18,9 @@ RUN flutter build web --release --dart-define=API_BASE_URL=${API_BASE_URL}
 FROM nginx:alpine
 
 COPY --from=builder /app/build/web /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf.template
 
+# Railway injecte $PORT dynamiquement — on le substitue au démarrage
+ENV PORT=80
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD sh -c "envsubst '\$PORT' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
