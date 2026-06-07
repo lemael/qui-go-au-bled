@@ -48,13 +48,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       if (state.matchedLocation == AppRoutes.splash) return null;
 
       if (!isAuthenticated && !isAuthRoute) return AppRoutes.login;
-      // Rediriger l'admin vers son panneau
+
       final user = authState.valueOrNull;
-      if (isAuthenticated && isAuthRoute) {
-        return (user?.isAdmin == true) ? AppRoutes.admin : AppRoutes.home;
+      final isAdmin = user?.isAdmin == true;
+
+      // Un admin doit toujours être sur /admin
+      if (isAuthenticated && isAdmin && state.matchedLocation != AppRoutes.admin) {
+        return AppRoutes.admin;
+      }
+      // Rediriger un utilisateur normal hors des pages auth
+      if (isAuthenticated && !isAdmin && isAuthRoute) {
+        return AppRoutes.home;
       }
       // Empêcher un non-admin d'accéder à /admin
-      if (isAuthenticated && state.matchedLocation == AppRoutes.admin && user?.isAdmin != true) {
+      if (isAuthenticated && !isAdmin && state.matchedLocation == AppRoutes.admin) {
         return AppRoutes.home;
       }
 
