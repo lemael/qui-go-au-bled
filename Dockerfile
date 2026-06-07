@@ -17,6 +17,9 @@ RUN flutter build web --release --dart-define=API_BASE_URL=${API_BASE_URL}
 # ── Stage 2 : Servir avec nginx ───────────────────────────────────────────────
 FROM nginx:alpine
 
+# envsubst est fourni par le package gettext
+RUN apk add --no-cache gettext
+
 COPY --from=builder /app/build/web /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf.template
 
