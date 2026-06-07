@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helpers ──────────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isTransporter(userId) {
+      return isAuthenticated()
+        && get(/databases/$(database)/documents/users/$(userId)).data.role == 'transporter';
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // ─── Users ────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId)
+        || (isAuthenticated()
+            && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['averageRating', 'totalReviews', 'fcmToken']));
+      allow delete: if false;
+    }
+
+    // ─── Transport Ads ────────────────────────────────────────
+    match /transport_ads/{adId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && getUserRole() == 'transporter'
+        && request.resource.data.transporterId == request.auth.uid;
+      allow update: if isAuthenticated()
+        && resource.data.transporterId == request.auth.uid;
+      allow delete: if isAuthenticated()
+        && resource.data.transporterId == request.auth.uid;
+    }
+
+    // ─── Transport Requests ───────────────────────────────────
+    match /transport_requests/{requestId} {
+      allow read: if isAuthenticated()
+        && (resource.data.clientId == request.auth.uid
+            || resource.data.transporterId == request.auth.uid);
+      allow create: if isAuthenticated()
+        && request.resource.data.clientId == request.auth.uid
+        && getUserRole() == 'client';
+      // Only transporter can accept/reject
+      allow update: if isAuthenticated()
+        && resource.data.transporterId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['status', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // ─── Transport Orders ─────────────────────────────────────
+    match /transport_orders/{orderId} {
+      allow read: if isAuthenticated()
+        && (resource.data.clientId == request.auth.uid
+            || resource.data.transporterId == request.auth.uid);
+      // Only server/admin creates orders (via Cloud Functions)
+      // For direct client access, allow transporter to create on request accept
+      allow create: if isAuthenticated()
+        && request.resource.data.transporterId == request.auth.uid;
+      allow update: if isAuthenticated()
+        && (resource.data.transporterId == request.auth.uid
+            || resource.data.clientId == request.auth.uid)
+        && _isValidOrderUpdate();
+      allow delete: if false;
+    }
+
+    function _isValidOrderUpdate() {
+      let changedKeys = request.resource.data.diff(resource.data).affectedKeys();
+      let allowedTransporterKeys = ['status', 'updatedAt', 'reviewAuthorized'].toSet();
+      let allowedBothKeys = ['status', 'updatedAt', 'cancellationInfo'].toSet();
+      return changedKeys.hasOnly(allowedBothKeys)
+          || changedKeys.hasOnly(allowedTransporterKeys);
+    }
+
+    // ─── Reviews ──────────────────────────────────────────────
+    match /reviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.clientId == request.auth.uid
+        && _isOrderCompleted(request.resource.data.orderId)
+        && _isReviewAuthorized(request.resource.data.orderId, request.auth.uid);
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    function _isOrderCompleted(orderId) {
+      return get(/databases/$(database)/documents/transport_orders/$(orderId)).data.status == 'COMPLETED';
+    }
+
+    function _isReviewAuthorized(orderId, clientId) {
+      let order = get(/databases/$(database)/documents/transport_orders/$(orderId)).data;
+      return order.reviewAuthorized == true && order.clientId == clientId;
+    }
+
+    // ─── Notifications ────────────────────────────────────────
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['isRead']);
+      allow delete: if false;
+    }
+
+    // ─── Cancellations ────────────────────────────────────────
+    match /cancellations/{cancelId} {
+      allow read: if isAuthenticated()
+        && (resource.data.clientId == request.auth.uid
+            || resource.data.transporterId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ─── Counters (for order number generation) ───────────────
+    match /counters/{counterId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+  }
+}

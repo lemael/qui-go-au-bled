@@ -1,0 +1,106 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "transport_ads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "flightDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "transport_ads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "departureCityLower", "order": "ASCENDING" },
+        { "fieldPath": "flightDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "transport_ads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "arrivalCityLower", "order": "ASCENDING" },
+        { "fieldPath": "flightDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "transport_ads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "departureCityLower", "order": "ASCENDING" },
+        { "fieldPath": "arrivalCityLower", "order": "ASCENDING" },
+        { "fieldPath": "flightDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "transport_ads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "transporterId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "transport_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "transporterId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "transport_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "clientId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "transport_orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "transporterId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "transport_orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "clientId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "transporterId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "notifications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "notifications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "isRead", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

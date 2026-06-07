@@ -1,0 +1,279 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/extensions/string_extensions.dart';
+import '../../../../core/widgets/star_rating_widget.dart';
+import '../../../../routing/routes.dart';
+import '../providers/auth_provider.dart';
+
+class ProfileScreen extends ConsumerWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userState = ref.watch(currentUserNotifierProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Mon profil'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () => context.push(AppRoutes.editProfile),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push(AppRoutes.settings),
+          ),
+        ],
+      ),
+      body: userState.when(
+        loading: () =>
+            const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text(e.toString())),
+        data: (user) {
+          if (user == null) return const SizedBox();
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                // Avatar
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 52,
+                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      backgroundImage: user.photoUrl != null
+                          ? CachedNetworkImageProvider(user.photoUrl!)
+                          : null,
+                      child: user.photoUrl == null
+                          ? Text(
+                              user.fullName.initials,
+                              style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
+                            )
+                          : null,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  user.fullName,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Client',
+                        style: TextStyle(
+                          color: AppColors.secondary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Transporteur',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (user.isTransporter) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      StarRatingWidget(
+                        rating: user.averageRating,
+                        showLabel: true,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '(${user.totalReviews} avis)',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: AppColors.grey500),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 32),
+                _InfoCard(
+                  children: [
+                    _InfoRow(
+                      icon: Icons.email_outlined,
+                      label: 'Email',
+                      value: user.email,
+                    ),
+                    const Divider(),
+                    _InfoRow(
+                      icon: Icons.phone_outlined,
+                      label: 'Téléphone',
+                      value: user.phone,
+                    ),
+                    const Divider(),
+                    _InfoRow(
+                      icon: Icons.location_on_outlined,
+                      label: 'Adresse',
+                      value: user.address,
+                    ),
+                  ],
+                ),
+                if (user.isTransporter) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => context.push(AppRoutes.dashboard),
+                          icon: const Icon(Icons.dashboard_outlined),
+                          label: const Text('Tableau de bord'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () =>
+                              context.push('/reviews/${user.id}'),
+                          icon: const Icon(Icons.star_outline_rounded),
+                          label: const Text('Mes avis'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.error,
+                    side: const BorderSide(color: AppColors.error),
+                  ),
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Se déconnecter'),
+                        content: const Text(
+                          'Êtes-vous sûr de vouloir vous déconnecter ?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Annuler'),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.error,
+                            ),
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('Se déconnecter'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true && context.mounted) {
+                      await ref
+                          .read(currentUserNotifierProvider.notifier)
+                          .signOut();
+                      if (context.mounted) context.go(AppRoutes.login);
+                    }
+                  },
+                  icon: const Icon(Icons.logout_rounded),
+                  label: const Text('Se déconnecter'),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _InfoCard extends StatelessWidget {
+  final List<Widget> children;
+  const _InfoCard({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(children: children),
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppColors.primary),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: AppColors.grey500),
+              ),
+              Text(
+                value,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
