@@ -42,7 +42,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     authState.when(
       data: (user) {
         if (user != null) {
-          context.go(AppRoutes.home);
+          context.go(user.isAdmin ? AppRoutes.admin : AppRoutes.home);
         } else {
           context.go(AppRoutes.login);
         }
