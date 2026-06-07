@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum UserRole { transporter, client, both }
+enum UserRole { transporter, client, both, admin }
 
 class UserEntity extends Equatable {
   final String id;
@@ -31,6 +31,7 @@ class UserEntity extends Equatable {
     required this.updatedAt,
   });
 
+  bool get isAdmin => role == UserRole.admin;
   bool get isTransporter => role == UserRole.transporter || role == UserRole.both;
   bool get isClient => role == UserRole.client || role == UserRole.both;
 

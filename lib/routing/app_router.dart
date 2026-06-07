@@ -26,6 +26,7 @@ import '../features/transport_orders/presentation/screens/order_detail_screen.da
 import '../features/transport_requests/presentation/screens/my_requests_screen.dart';
 import '../features/transport_requests/presentation/screens/request_detail_screen.dart';
 import '../features/transporter/presentation/screens/transporter_profile_screen.dart';
+import '../features/admin/presentation/screens/admin_screen.dart';
 import 'routes.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -47,7 +48,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       if (state.matchedLocation == AppRoutes.splash) return null;
 
       if (!isAuthenticated && !isAuthRoute) return AppRoutes.login;
-      if (isAuthenticated && isAuthRoute) return AppRoutes.home;
+      // Rediriger l'admin vers son panneau
+      final user = authState.valueOrNull;
+      if (isAuthenticated && isAuthRoute) {
+        return (user?.isAdmin == true) ? AppRoutes.admin : AppRoutes.home;
+      }
+      // Empêcher un non-admin d'accéder à /admin
+      if (isAuthenticated && state.matchedLocation == AppRoutes.admin && user?.isAdmin != true) {
+        return AppRoutes.home;
+      }
 
       return null;
     },
@@ -171,6 +180,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.settings,
             builder: (context, state) => const SettingsScreen(),
           ),
+          GoRoute(
+            path: AppRoutes.admin,
+            builder: (context, state) => const AdminScreen(),
+          ),
         ],
       ),
     ],
@@ -188,7 +201,7 @@ class MainShell extends ConsumerStatefulWidget {
 class _MainShellState extends ConsumerState<MainShell> {
   int _currentIndex = 0;
 
-  final _tabs = const [
+  static const _userTabs = [
     AppRoutes.home,
     AppRoutes.search,
     AppRoutes.myTransports,
@@ -196,15 +209,40 @@ class _MainShellState extends ConsumerState<MainShell> {
     AppRoutes.profile,
   ];
 
+  static const _adminTabs = [AppRoutes.admin];
+
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(authStateProvider).valueOrNull;
+    final isAdmin = user?.isAdmin == true;
+    final tabs = isAdmin ? _adminTabs : _userTabs;
+
+    // Clamp l'index si on change de rôle
+    final safeIndex = _currentIndex.clamp(0, tabs.length - 1);
+
+    if (isAdmin) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Qui Go au Bled — Admin'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () => ref.read(currentUserNotifierProvider.notifier).signOut(),
+              tooltip: 'Déconnexion',
+            ),
+          ],
+        ),
+        body: widget.child,
+      );
+    }
+
     return Scaffold(
       body: widget.child,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
+        selectedIndex: safeIndex,
         onDestinationSelected: (index) {
           setState(() => _currentIndex = index);
-          context.go(_tabs[index]);
+          context.go(tabs[index]);
         },
         destinations: const [
           NavigationDestination(

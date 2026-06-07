@@ -49,7 +49,9 @@ class UserModel {
             ? UserRole.transporter
             : role == 'client'
                 ? UserRole.client
-                : UserRole.both,
+                : role == 'admin'
+                    ? UserRole.admin
+                    : UserRole.both,
         averageRating: averageRating,
         totalReviews: totalReviews,
         fcmToken: fcmToken,

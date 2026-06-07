@@ -186,8 +186,20 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = status == AdStatus.active ? AppColors.success : AppColors.grey400;
-    final label = status == AdStatus.active ? 'Actif' : 'Inactif';
+    final color = status == AdStatus.active
+        ? AppColors.success
+        : status == AdStatus.pending
+            ? Colors.orange
+            : status == AdStatus.rejected
+                ? Colors.red
+                : AppColors.grey400;
+    final label = status == AdStatus.active
+        ? 'Actif'
+        : status == AdStatus.pending
+            ? 'En attente'
+            : status == AdStatus.rejected
+                ? 'Rejeté'
+                : 'Inactif';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(

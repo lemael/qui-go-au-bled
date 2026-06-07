@@ -24,4 +24,5 @@ class AppRoutes {
   static const String editProfile = '/profile/edit';
   static const String settings = '/settings';
   static const String resetPassword = '/reset-password';
+  static const String admin = '/admin';
 }

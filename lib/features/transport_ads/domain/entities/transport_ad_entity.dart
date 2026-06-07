@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum AdStatus { active, inactive, expired }
+enum AdStatus { active, inactive, expired, pending, rejected }
 
 class TransportAdEntity extends Equatable {
   final String id;

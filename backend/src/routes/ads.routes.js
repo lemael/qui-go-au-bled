@@ -97,8 +97,8 @@ router.post('/', auth, async (req, res) => {
     const { departureCity, arrivalCity, flightDate, flightTime, maxWeightKg, pricePerKg, description } = req.body;
     const id = uuidv4();
     await pool.query(
-      `INSERT INTO transport_ads (id, transporter_id, departure_city, arrival_city, flight_date, flight_time, max_weight_kg, price_per_kg, description)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      `INSERT INTO transport_ads (id, transporter_id, departure_city, arrival_city, flight_date, flight_time, max_weight_kg, price_per_kg, description, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'pending')`,
       [id, req.userId, departureCity, arrivalCity, flightDate, flightTime || '', maxWeightKg, pricePerKg, description || '']
     );
     const result = await pool.query(`${AD_SELECT} WHERE a.id = $1`, [id]);

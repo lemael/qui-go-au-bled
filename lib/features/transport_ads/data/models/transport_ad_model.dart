@@ -117,6 +117,10 @@ class TransportAdModel {
         return AdStatus.active;
       case 'inactive':
         return AdStatus.inactive;
+      case 'pending':
+        return AdStatus.pending;
+      case 'rejected':
+        return AdStatus.rejected;
       default:
         return AdStatus.expired;
     }
@@ -130,6 +134,10 @@ class TransportAdModel {
         return 'inactive';
       case AdStatus.expired:
         return 'expired';
+      case AdStatus.pending:
+        return 'pending';
+      case AdStatus.rejected:
+        return 'rejected';
     }
   }
 }
