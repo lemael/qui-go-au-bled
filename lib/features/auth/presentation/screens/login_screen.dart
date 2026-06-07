@@ -45,7 +45,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       );
     } else if (state.hasValue && state.value != null) {
-      context.go(AppRoutes.home);
+      final user = state.value!;
+      context.go(user.isAdmin ? AppRoutes.admin : AppRoutes.home);
     }
   }
 
