@@ -11,7 +11,8 @@ RUN flutter pub get
 COPY . .
 
 # URL du backend (passée au build, ex: https://mon-backend.railway.app/api)
-ARG API_BASE_URL=https://backend-production.up.railway.app/api
+# Railway injecte API_BASE_URL comme var d'env → on la passe en ARG
+ARG API_BASE_URL=https://backend-qui-go-au-bled-production.up.railway.app/api
 RUN flutter build web --release --dart-define=API_BASE_URL=${API_BASE_URL}
 
 # ── Stage 2 : Servir avec nginx ───────────────────────────────────────────────
