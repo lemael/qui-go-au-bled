@@ -18,8 +18,12 @@ RUN flutter build web --release --dart-define=API_BASE_URL=${API_BASE_URL}
 # ── Stage 2 : Servir avec nginx ───────────────────────────────────────────────
 FROM nginx:alpine
 
-COPY --from=builder /app/build/web /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
+# envsubst (pour injecter $PORT) est fourni par le package gettext
+RUN apk add --no-cache gettext
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+COPY --from=builder /app/build/web /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf.template
+
+ENV PORT=8080
+EXPOSE 8080
+CMD sh -c "envsubst '\$PORT' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
