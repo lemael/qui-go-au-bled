@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/auth/presentation/providers/auth_provider.dart';
+import '../features/auth/domain/entities/user_entity.dart';
 import '../features/auth/presentation/screens/edit_profile_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/profile_screen.dart';
@@ -32,36 +33,58 @@ import 'routes.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
+// ChangeNotifier pour déclencher le redirect GoRouter sans recréer le routeur
+class _AuthListenable extends ChangeNotifier {
+  UserEntity? _user;
+
+  void update(UserEntity? user) {
+    _user = user;
+    notifyListeners();
+  }
+
+  UserEntity? get user => _user;
+}
+
+final _authListenableProvider = Provider<_AuthListenable>((ref) {
+  final notifier = _AuthListenable();
+  ref.listen<AsyncValue<UserEntity?>>(authStateProvider, (_, next) {
+    notifier.update(next.valueOrNull);
+  });
+  return notifier;
+});
+
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final authListenable = ref.watch(_authListenableProvider);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.splash,
+    refreshListenable: authListenable,
     redirect: (context, state) {
-      final isAuthenticated = authState.valueOrNull != null;
-      final isAuthRoute = state.matchedLocation == AppRoutes.login ||
-          state.matchedLocation == AppRoutes.register ||
-          state.matchedLocation == AppRoutes.splash ||
-          state.matchedLocation == AppRoutes.resetPassword;
+      final user = authListenable.user;
+      final isAuthenticated = user != null;
+      final isAdmin = user?.isAdmin == true;
+      final loc = state.matchedLocation;
+      final isAuthRoute = loc == AppRoutes.login ||
+          loc == AppRoutes.register ||
+          loc == AppRoutes.splash ||
+          loc == AppRoutes.resetPassword;
 
-      if (state.matchedLocation == AppRoutes.splash) return null;
+      if (loc == AppRoutes.splash) return null;
 
+      // Non-authentifié → login
       if (!isAuthenticated && !isAuthRoute) return AppRoutes.login;
 
-      final user = authState.valueOrNull;
-      final isAdmin = user?.isAdmin == true;
-
-      // Un admin doit toujours être sur /admin
-      if (isAuthenticated && isAdmin && state.matchedLocation != AppRoutes.admin) {
+      // Admin : toujours sur /admin
+      if (isAuthenticated && isAdmin && loc != AppRoutes.admin) {
         return AppRoutes.admin;
       }
-      // Rediriger un utilisateur normal hors des pages auth
+      // Utilisateur normal sur page auth → home
       if (isAuthenticated && !isAdmin && isAuthRoute) {
         return AppRoutes.home;
       }
-      // Empêcher un non-admin d'accéder à /admin
-      if (isAuthenticated && !isAdmin && state.matchedLocation == AppRoutes.admin) {
+      // Non-admin ne peut pas accéder à /admin
+      if (isAuthenticated && !isAdmin && loc == AppRoutes.admin) {
         return AppRoutes.home;
       }
 
