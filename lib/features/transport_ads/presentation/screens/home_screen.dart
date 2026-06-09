@@ -206,7 +206,7 @@ class _TransporterQuickActions extends StatelessWidget {
           Expanded(
             child: _QuickActionCard(
               icon: Icons.list_alt_rounded,
-              label: 'Mes annonces',
+              label: 'Les annonces',
               color: AppColors.secondary,
               onTap: () => context.push(AppRoutes.myAds),
             ),
