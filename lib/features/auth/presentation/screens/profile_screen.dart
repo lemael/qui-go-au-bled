@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/extensions/string_extensions.dart';
-import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/star_rating_widget.dart';
 import '../../../../routing/routes.dart';
 import '../../../transport_ads/domain/entities/transport_ad_entity.dart';
@@ -440,7 +439,7 @@ class _AdHistoryTile extends StatelessWidget {
                           size: 12, color: AppColors.grey400),
                       const SizedBox(width: 4),
                       Text(
-                        DateFormatter.formatDate(ad.flightDate),
+                        '${ad.flightDate.day.toString().padLeft(2,'0')}/${ad.flightDate.month.toString().padLeft(2,'0')}/${ad.flightDate.year}',
                         style: Theme.of(context)
                             .textTheme
                             .bodySmall
