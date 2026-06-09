@@ -257,7 +257,10 @@ class _MainShellState extends ConsumerState<MainShell> {
           actions: [
             IconButton(
               icon: const Icon(Icons.logout),
-              onPressed: () => ref.read(currentUserNotifierProvider.notifier).signOut(),
+              onPressed: () async {
+                await ref.read(currentUserNotifierProvider.notifier).signOut();
+                if (context.mounted) context.go(AppRoutes.login);
+              },
               tooltip: 'Déconnexion',
             ),
           ],
