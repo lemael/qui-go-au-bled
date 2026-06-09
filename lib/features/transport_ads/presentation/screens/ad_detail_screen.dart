@@ -9,10 +9,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/extensions/string_extensions.dart';
 import '../../../../core/utils/date_formatter.dart';
-import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/star_rating_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../domain/entities/transport_ad_entity.dart';
 import '../providers/transport_ad_provider.dart';
 
 class AdDetailScreen extends ConsumerWidget {
@@ -21,20 +19,7 @@ class AdDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final adAsync = ref.watch(
-      // inline provider for single ad
-      StreamProvider.family<TransportAdEntity?, String>((ref, id) {
-        return ref.watch(transportAdRepositoryProvider).watchActiveAds().map(
-              (ads) {
-                try {
-                  return ads.firstWhere((a) => a.id == id);
-                } catch (_) {
-                  return null;
-                }
-              },
-            );
-      })(adId),
-    );
+    final user = ref.watch(currentUserNotifierProvider).value;
 
     return Scaffold(
       appBar: AppBar(
@@ -43,25 +28,15 @@ class AdDetailScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.share_outlined),
             onPressed: () async {
-              final ad = adAsync.value;
-              if (ad == null) return;
-              await Share.share(ad.shareText);
+              final result = await ref
+                  .read(transportAdRepositoryProvider)
+                  .getAdById(adId);
+              result.fold((_) {}, (ad) => Share.share(ad.shareText));
             },
           ),
         ],
       ),
-      body: adAsync.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(e.toString())),
-        data: (adObj) {
-          if (adObj == null) return const Center(child: Text('Annonce introuvable'));
-          final ad = adObj;
-          // Using dynamic cast since we used Object?
-          final user = ref.watch(currentUserNotifierProvider).value;
-          return _AdDetailBody(adId: adId, userId: user?.id ?? '');
-        },
-      ),
+      body: _AdDetailBody(adId: adId, userId: user?.id ?? ''),
     );
   }
 }

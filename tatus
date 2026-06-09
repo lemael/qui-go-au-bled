@@ -1,0 +1,5 @@
+                  id                  |     full_name      |              email               |    phone     |    address    | role | average_rating | total_reviews |          created_at           | total_ads | total_orders 
+--------------------------------------+--------------------+----------------------------------+--------------+---------------+------+----------------+---------------+-------------------------------+-----------+--------------
+ 0d2846a4-a82b-4585-90cb-5d33ee2b0cee | Ahmed Transporteur | transporteur_1781023635@test.com | +33612345678 | Paris, France | both |           5.00 |             1 | 2026-06-09 16:47:16.465945+00 |         1 |            1
+(1 Zeile)
+
