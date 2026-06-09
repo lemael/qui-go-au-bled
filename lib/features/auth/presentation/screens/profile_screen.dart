@@ -5,8 +5,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/extensions/string_extensions.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/star_rating_widget.dart';
 import '../../../../routing/routes.dart';
+import '../../../transport_ads/domain/entities/transport_ad_entity.dart';
+import '../../../transport_ads/presentation/providers/transport_ad_provider.dart';
 import '../providers/auth_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -170,6 +173,8 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 24),
+                  _AdsHistory(userId: user.id),
                 ],
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
@@ -273,6 +278,225 @@ class _InfoRow extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Historique des annonces ──────────────────────────────────────────────────
+
+class _AdsHistory extends ConsumerWidget {
+  final String userId;
+  const _AdsHistory({required this.userId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final adsAsync = ref.watch(myTransporterAdsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.history_rounded, size: 20, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Text(
+              'Historique des annonces',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const Spacer(),
+            adsAsync.maybeWhen(
+              data: (ads) => Text(
+                '${ads.length} annonce${ads.length > 1 ? 's' : ''}',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: AppColors.grey500),
+              ),
+              orElse: () => const SizedBox(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        adsAsync.when(
+          loading: () => const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(),
+            ),
+          ),
+          error: (e, _) => Text(
+            'Impossible de charger les annonces',
+            style: TextStyle(color: AppColors.error),
+          ),
+          data: (ads) {
+            if (ads.isEmpty) {
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(Icons.flight_outlined,
+                            size: 40, color: AppColors.grey400),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Aucune annonce publiée',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: AppColors.grey500),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+            return Card(
+              child: Column(
+                children: [
+                  for (int i = 0; i < ads.length; i++) ...[
+                    if (i > 0)
+                      const Divider(height: 1, indent: 16, endIndent: 16),
+                    _AdHistoryTile(
+                      ad: ads[i],
+                      onTap: () => context.push('/ads/${ads[i].id}'),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _AdHistoryTile extends StatelessWidget {
+  final TransportAdEntity ad;
+  final VoidCallback onTap;
+
+  const _AdHistoryTile({required this.ad, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.flight_takeoff_rounded,
+                size: 20,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        ad.departureCity,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 6),
+                        child: Icon(Icons.arrow_forward_rounded,
+                            size: 14, color: AppColors.grey400),
+                      ),
+                      Text(
+                        ad.arrivalCity,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_today_outlined,
+                          size: 12, color: AppColors.grey400),
+                      const SizedBox(width: 4),
+                      Text(
+                        DateFormatter.formatDate(ad.flightDate),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: AppColors.grey500),
+                      ),
+                      const SizedBox(width: 10),
+                      Icon(Icons.scale_outlined,
+                          size: 12, color: AppColors.grey400),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${ad.maxWeightKg.toStringAsFixed(0)} kg · ${ad.pricePerKg.toStringAsFixed(2)}€/kg',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: AppColors.grey500),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            _AdStatusBadge(status: ad.status),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AdStatusBadge extends StatelessWidget {
+  final AdStatus status;
+  const _AdStatusBadge({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color) = switch (status) {
+      AdStatus.active   => ('Actif', AppColors.success),
+      AdStatus.pending  => ('En attente', Colors.orange),
+      AdStatus.rejected => ('Rejeté', AppColors.error),
+      AdStatus.inactive => ('Inactif', AppColors.grey400),
+      AdStatus.expired  => ('Expiré', AppColors.grey400),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
