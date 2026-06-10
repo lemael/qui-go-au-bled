@@ -37,7 +37,7 @@ class ProfileScreen extends ConsumerWidget {
             const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (user) {
-          if (user == null) return const SizedBox();
+          if (user == null) return const Center(child: CircularProgressIndicator());
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(

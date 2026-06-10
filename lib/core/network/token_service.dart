@@ -1,10 +1,3 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-class TokenService {
-  static const _storage = FlutterSecureStorage();
-  static const _key = 'auth_token';
-
-  static Future<String?> getToken() => _storage.read(key: _key);
-  static Future<void> saveToken(String token) => _storage.write(key: _key, value: token);
-  static Future<void> clearToken() => _storage.delete(key: _key);
-}
+// Conditional export: uses localStorage on web, flutter_secure_storage on native.
+export 'token_service_io.dart'
+    if (dart.library.html) 'token_service_web.dart';
