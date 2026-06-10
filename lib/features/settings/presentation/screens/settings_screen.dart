@@ -99,7 +99,8 @@ class SettingsScreen extends ConsumerWidget {
                 await ref
                     .read(currentUserNotifierProvider.notifier)
                     .signOut();
-                if (context.mounted) context.go(AppRoutes.login);
+                // Le GoRouter redirect gère automatiquement la
+                // navigation vers /login quand user == null.
               },
               icon: const Icon(Icons.logout_rounded),
               label: const Text('Se déconnecter'),

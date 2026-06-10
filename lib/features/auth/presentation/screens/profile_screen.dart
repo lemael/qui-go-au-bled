@@ -204,11 +204,12 @@ class ProfileScreen extends ConsumerWidget {
                         ],
                       ),
                     );
-                    if (confirm == true && context.mounted) {
+                    if (confirm == true) {
                       await ref
                           .read(currentUserNotifierProvider.notifier)
                           .signOut();
-                      if (context.mounted) context.go(AppRoutes.login);
+                      // Le GoRouter redirect gère automatiquement la
+                      // navigation vers /login quand user == null.
                     }
                   },
                   icon: const Icon(Icons.logout_rounded),

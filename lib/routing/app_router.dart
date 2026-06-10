@@ -36,19 +36,22 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 // ChangeNotifier pour déclencher le redirect GoRouter sans recréer le routeur
 class _AuthListenable extends ChangeNotifier {
   UserEntity? _user;
+  bool _isLoading = true;
 
-  void update(UserEntity? user) {
-    _user = user;
+  void update(AsyncValue<UserEntity?> state) {
+    _isLoading = state is AsyncLoading;
+    _user = state.valueOrNull;
     notifyListeners();
   }
 
   UserEntity? get user => _user;
+  bool get isLoading => _isLoading;
 }
 
 final _authListenableProvider = Provider<_AuthListenable>((ref) {
   final notifier = _AuthListenable();
   ref.listen<AsyncValue<UserEntity?>>(authStateProvider, (_, next) {
-    notifier.update(next.valueOrNull);
+    notifier.update(next);
   });
   return notifier;
 });
@@ -61,6 +64,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.splash,
     refreshListenable: authListenable,
     redirect: (context, state) {
+      final isLoading = authListenable.isLoading;
       final user = authListenable.user;
       final isAuthenticated = user != null;
       final isAdmin = user?.isAdmin == true;
@@ -71,6 +75,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           loc == AppRoutes.resetPassword;
 
       if (loc == AppRoutes.splash) return null;
+
+      // Ne pas rediriger pendant un changement d'état en cours
+      if (isLoading) return null;
 
       // Non-authentifié → login
       if (!isAuthenticated && !isAuthRoute) return AppRoutes.login;
@@ -259,7 +266,8 @@ class _MainShellState extends ConsumerState<MainShell> {
               icon: const Icon(Icons.logout),
               onPressed: () async {
                 await ref.read(currentUserNotifierProvider.notifier).signOut();
-                if (context.mounted) context.go(AppRoutes.login);
+                // Le GoRouter redirect gère automatiquement la
+                // navigation vers /login quand user == null.
               },
               tooltip: 'Déconnexion',
             ),
