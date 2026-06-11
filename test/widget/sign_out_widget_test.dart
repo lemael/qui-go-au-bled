@@ -12,7 +12,6 @@ import 'package:qui_go_au_bled/features/auth/presentation/providers/auth_provide
 import 'package:qui_go_au_bled/features/settings/presentation/screens/settings_screen.dart';
 import 'package:qui_go_au_bled/features/auth/presentation/screens/profile_screen.dart';
 import 'dart:async';
-import 'package:go_router/go_router.dart';
 import 'package:qui_go_au_bled/features/transport_ads/domain/entities/transport_ad_entity.dart';
 import 'package:qui_go_au_bled/features/transport_ads/presentation/providers/transport_ad_provider.dart';
 import 'package:qui_go_au_bled/routing/app_router.dart';
