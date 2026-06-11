@@ -132,8 +132,7 @@ final myOrdersProvider = FutureProvider.autoDispose<List<TransportOrderEntity>>(
 });
 
 class OrderNotifier extends StateNotifier<AsyncValue<TransportOrderEntity?>> {
-  final Ref _ref;
-  OrderNotifier(this._ref) : super(const AsyncData(null));
+  OrderNotifier() : super(const AsyncData(null));
 
   Dio get _dio => ApiClient.instance.dio;
 
@@ -208,5 +207,5 @@ class OrderNotifier extends StateNotifier<AsyncValue<TransportOrderEntity?>> {
 
 final orderNotifierProvider =
     StateNotifierProvider<OrderNotifier, AsyncValue<TransportOrderEntity?>>(
-  (ref) => OrderNotifier(ref),
+  (ref) => OrderNotifier(),
 );

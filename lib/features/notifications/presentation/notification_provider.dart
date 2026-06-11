@@ -122,8 +122,7 @@ final unreadNotificationsCountProvider = Provider<int>((ref) {
 });
 
 class NotificationNotifier extends StateNotifier<AsyncValue<void>> {
-  final Ref _ref;
-  NotificationNotifier(this._ref) : super(const AsyncData(null));
+  NotificationNotifier() : super(const AsyncData(null));
 
   Dio get _dio => ApiClient.instance.dio;
 
@@ -142,5 +141,5 @@ class NotificationNotifier extends StateNotifier<AsyncValue<void>> {
 
 final notificationNotifierProvider =
     StateNotifierProvider<NotificationNotifier, AsyncValue<void>>(
-  (ref) => NotificationNotifier(ref),
+  (ref) => NotificationNotifier(),
 );

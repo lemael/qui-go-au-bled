@@ -3,7 +3,6 @@ import 'package:qui_go_au_bled/features/transport_ads/domain/entities/transport_
 
 void main() {
   final kFlightDate = DateTime(2026, 8, 15);
-  final kPastDate = DateTime(2020, 1, 1);
 
   group('TransportAdEntity', () {
     late TransportAdEntity activeAd;
@@ -36,23 +35,7 @@ void main() {
     });
 
     test('isActive returns false for inactive status', () {
-      // Since entity is immutable, we create a new one
-      final ad = TransportAdEntity(
-        id: 'ad-002',
-        transporterId: 'tr-001',
-        transporterName: 'Test',
-        departureCity: 'Paris',
-        arrivalCity: 'Tunis',
-        flightDate: kFlightDate,
-        flightTime: '10:00',
-        maxWeightKg: 10,
-        pricePerKg: 5,
-        description: '',
-        status: AdStatus.inactive,
-        createdAt: DateTime(2026, 1, 1),
-        updatedAt: DateTime(2026, 1, 1),
-      );
-      expect(ad.isActive, isFalse);
+      expect(inactiveAd.isActive, isFalse);
     });
 
     test('isUpcoming returns true for future flights', () {

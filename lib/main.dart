@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 
 import 'app.dart';
 import 'firebase_options.dart';
@@ -14,7 +15,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('fr_FR', null);
+  Intl.defaultLocale = 'fr_FR';
+  await initializeDateFormatting('fr_FR');
 
   // Firebase uniquement pour les notifications push FCM
   // L'app fonctionne sans si Firebase n'est pas configuré

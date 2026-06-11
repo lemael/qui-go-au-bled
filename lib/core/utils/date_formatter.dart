@@ -8,7 +8,7 @@ class DateFormatter {
       DateFormat('dd/MM/yyyy à HH:mm', 'fr_FR');
   static final DateFormat _timeFormat = DateFormat('HH:mm', 'fr_FR');
   static final DateFormat _monthYearFormat = DateFormat('MMMM yyyy', 'fr_FR');
-  static final DateFormat _isoFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+  static final DateFormat _isoFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss", 'fr_FR');
 
   static String formatDate(DateTime date) => _dateFormat.format(date);
 

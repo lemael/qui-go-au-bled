@@ -46,6 +46,10 @@ class CurrentUserNotifier extends StateNotifier<AsyncValue<UserEntity?>> {
   final Ref _ref;
 
   CurrentUserNotifier(this._ref) : super(const AsyncLoading()) {
+    init();
+  }
+
+  void init() {
     _loadCurrentUser();
   }
 

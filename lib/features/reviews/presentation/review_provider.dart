@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
-import '../../auth/presentation/providers/auth_provider.dart';
 
 // ─── Entity ───────────────────────────────────────────────────────────────────
 
@@ -138,8 +137,7 @@ final transporterReviewsProvider = FutureProviderFamily<List<ReviewEntity>, Stri
 );
 
 class ReviewNotifier extends StateNotifier<AsyncValue<void>> {
-  final Ref _ref;
-  ReviewNotifier(this._ref) : super(const AsyncData(null));
+  ReviewNotifier() : super(const AsyncData(null));
 
   Dio get _dio => ApiClient.instance.dio;
 
@@ -183,5 +181,5 @@ class ReviewNotifier extends StateNotifier<AsyncValue<void>> {
 
 final reviewNotifierProvider =
     StateNotifierProvider<ReviewNotifier, AsyncValue<void>>(
-  (ref) => ReviewNotifier(ref),
+  (ref) => ReviewNotifier(),
 );

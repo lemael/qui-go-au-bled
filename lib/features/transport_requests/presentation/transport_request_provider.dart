@@ -98,8 +98,7 @@ final incomingRequestsProvider = FutureProvider.autoDispose<List<TransportReques
 });
 
 class RequestNotifier extends StateNotifier<AsyncValue<void>> {
-  final Ref _ref;
-  RequestNotifier(this._ref) : super(const AsyncData(null));
+  RequestNotifier() : super(const AsyncData(null));
 
   Dio get _dio => ApiClient.instance.dio;
 
@@ -146,5 +145,5 @@ class RequestNotifier extends StateNotifier<AsyncValue<void>> {
 
 final requestNotifierProvider =
     StateNotifierProvider<RequestNotifier, AsyncValue<void>>(
-  (ref) => RequestNotifier(ref),
+  (ref) => RequestNotifier(),
 );
