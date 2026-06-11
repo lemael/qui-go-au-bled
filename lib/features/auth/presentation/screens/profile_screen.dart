@@ -182,6 +182,7 @@ class ProfileScreen extends ConsumerWidget {
                     side: const BorderSide(color: AppColors.error),
                   ),
                   onPressed: () async {
+                    debugPrint('[Logout] Bouton "Se déconnecter" pressé → ouverture du dialog');
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (dialogContext) => AlertDialog(
@@ -191,25 +192,34 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         actions: [
                           TextButton(
-                            onPressed: () => Navigator.pop(dialogContext, false),
+                            onPressed: () {
+                              debugPrint('[Logout] Bouton "Annuler" pressé → Navigator.pop(dialogContext, false)');
+                              Navigator.pop(dialogContext, false);
+                            },
                             child: const Text('Annuler'),
                           ),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.error,
                             ),
-                            onPressed: () => Navigator.pop(dialogContext, true),
+                            onPressed: () {
+                              debugPrint('[Logout] Bouton "Confirmer déconnexion" pressé → Navigator.pop(dialogContext, true)');
+                              Navigator.pop(dialogContext, true);
+                            },
                             child: const Text('Se déconnecter'),
                           ),
                         ],
                       ),
                     );
+                    debugPrint('[Logout] showDialog retourné avec confirm=$confirm');
                     if (confirm == true) {
+                      debugPrint('[Logout] Appel signOut()...');
                       await ref
                           .read(currentUserNotifierProvider.notifier)
                           .signOut();
-                      // Le GoRouter redirect gère automatiquement la
-                      // navigation vers /login quand user == null.
+                      debugPrint('[Logout] signOut() terminé → GoRouter devrait rediriger vers /login');
+                    } else {
+                      debugPrint('[Logout] Annulé ou dialog fermé autrement (confirm=$confirm)');
                     }
                   },
                   icon: const Icon(Icons.logout_rounded),
