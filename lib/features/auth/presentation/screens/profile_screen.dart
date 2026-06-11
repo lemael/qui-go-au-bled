@@ -182,24 +182,30 @@ class ProfileScreen extends ConsumerWidget {
                     side: const BorderSide(color: AppColors.error),
                   ),
                   onPressed: () async {
-                    final rootNav = Navigator.of(context, rootNavigator: true);
                     final confirm = await showDialog<bool>(
                       context: context,
-                      builder: (_) => AlertDialog(
+                      // useRootNavigator: false → dialog pushed on the shell
+                      // navigator (same level as ProfileScreen), so
+                      // Navigator.of(dialogContext).pop() closes only the
+                      // dialog without touching the profile route.
+                      useRootNavigator: false,
+                      builder: (dialogContext) => AlertDialog(
                         title: const Text('Se déconnecter'),
                         content: const Text(
                           'Êtes-vous sûr de vouloir vous déconnecter ?',
                         ),
                         actions: [
                           TextButton(
-                            onPressed: () => rootNav.pop(false),
+                            onPressed: () =>
+                                Navigator.of(dialogContext).pop(false),
                             child: const Text('Annuler'),
                           ),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.error,
                             ),
-                            onPressed: () => rootNav.pop(true),
+                            onPressed: () =>
+                                Navigator.of(dialogContext).pop(true),
                             child: const Text('Se déconnecter'),
                           ),
                         ],
