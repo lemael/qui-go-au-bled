@@ -11,11 +11,18 @@ import '../../../transport_ads/domain/entities/transport_ad_entity.dart';
 import '../../../transport_ads/presentation/providers/transport_ad_provider.dart';
 import '../providers/auth_provider.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  bool _confirmingLogout = false;
+
+  @override
+  Widget build(BuildContext context) {
     final userState = ref.watch(currentUserNotifierProvider);
 
     return Scaffold(
@@ -181,45 +188,52 @@ class ProfileScreen extends ConsumerWidget {
                     foregroundColor: AppColors.error,
                     side: const BorderSide(color: AppColors.error),
                   ),
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      // useRootNavigator: false → dialog pushed on the shell
-                      // navigator (same level as ProfileScreen), so
-                      // Navigator.of(dialogContext).pop() closes only the
-                      // dialog without touching the profile route.
-                      useRootNavigator: false,
-                      builder: (dialogContext) => AlertDialog(
-                        title: const Text('Se déconnecter'),
-                        content: const Text(
-                          'Êtes-vous sûr de vouloir vous déconnecter ?',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.of(dialogContext).pop(false),
-                            child: const Text('Annuler'),
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.error,
-                            ),
-                            onPressed: () =>
-                                Navigator.of(dialogContext).pop(true),
-                            child: const Text('Se déconnecter'),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirm == true) {
-                      await ref
-                          .read(currentUserNotifierProvider.notifier)
-                          .signOut();
-                    }
+                  onPressed: () {
+                    setState(() => _confirmingLogout = true);
                   },
                   icon: const Icon(Icons.logout_rounded),
                   label: const Text('Se déconnecter'),
                 ),
+                if (_confirmingLogout)
+                  Card(
+                    color: AppColors.error.withOpacity(0.08),
+                    margin: const EdgeInsets.only(top: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Êtes-vous sûr de vouloir vous déconnecter ?',
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  setState(() => _confirmingLogout = false);
+                                },
+                                child: const Text('Annuler'),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.error,
+                                ),
+                                onPressed: () async {
+                                  setState(() => _confirmingLogout = false);
+                                  await ref
+                                      .read(currentUserNotifierProvider.notifier)
+                                      .signOut();
+                                },
+                                child: const Text('Se déconnecter'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           );
