@@ -64,6 +64,14 @@ final myActiveAdProvider =
   return result.fold((_) => null, (ad) => ad);
 });
 
+final adDetailProvider =
+    FutureProvider.autoDispose.family<TransportAdEntity?, String>((ref, adId) async {
+  final result = await ref
+      .read(transportAdRepositoryProvider)
+      .getAdById(adId);
+  return result.fold((_) => null, (ad) => ad);
+});
+
 class ManageAdNotifier extends StateNotifier<AsyncValue<TransportAdEntity?>> {
   final Ref _ref;
   ManageAdNotifier(this._ref) : super(const AsyncData(null));

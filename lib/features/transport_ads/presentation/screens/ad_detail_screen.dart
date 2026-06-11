@@ -50,19 +50,14 @@ class _AdDetailBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Get the ad directly from repository
-    final adFuture = ref.watch(
-      FutureProvider.autoDispose((ref) =>
-          ref.watch(transportAdRepositoryProvider).getAdById(adId)),
-    );
+    final adAsync = ref.watch(adDetailProvider(adId));
 
-    return adFuture.when(
+    return adAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text(e.toString())),
-      data: (result) {
-        return result.fold(
-          (failure) => Center(child: Text(failure.message)),
-          (ad) => SingleChildScrollView(
+      data: (ad) {
+        if (ad == null) return const Center(child: Text('Annonce introuvable'));
+        return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,8 +213,7 @@ class _AdDetailBody extends ConsumerWidget {
                 ),
               ],
             ),
-          ),
-        );
+          );
       },
     );
   }
